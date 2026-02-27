@@ -1,0 +1,61 @@
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <Wire.h>
+#include <Servo.h>
+
+Adafruit_MPU6050 mpu;
+Servo myservo;
+sensors_event_t event;
+
+float speed = 0;          // simulated speed
+float friction = 0.05;    // how fast it slows down
+float sensitivity = 0.02; // acceleration effect
+
+unsigned long lastTime;
+
+void setup() {
+  Serial.begin(115200);
+  myservo.attach(6);
+
+  if (!mpu.begin()) {
+    Serial.println("MPU6050 not connected!");
+    while (1);
+  }
+
+  lastTime = millis();
+  Serial.println("Physics Speedometer Ready!");
+}
+
+void loop() {
+  mpu.getAccelerometerSensor()->getEvent(&event);
+
+  // Calculate time difference (seconds)
+  unsigned long currentTime = millis();
+  float dt = (currentTime - lastTime) / 1000.0;
+  lastTime = currentTime;
+
+  float accelX = event.acceleration.x;
+
+  // ---- Physics ----
+  speed += accelX * sensitivity;   // add acceleration
+  speed -= friction;               // natural slowing
+
+  // Prevent negative speed
+  if (speed < 0) speed = 0;
+
+  // Limit max speed
+  speed = constrain(speed, 0, 100);
+
+  // Convert speed to servo angle
+  int angle = map(speed, 0, 100, 0, 180);
+  myservo.write(angle);
+
+  Serial.print("AccelX: ");
+  Serial.print(accelX);
+  Serial.print("  Speed: ");
+  Serial.print(speed);
+  Serial.print("  Angle: ");
+  Serial.println(angle);
+
+  delay(20);
+}
