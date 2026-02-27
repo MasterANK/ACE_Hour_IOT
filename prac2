@@ -1,0 +1,19 @@
+#define LED 12
+#define BUTTON 11
+
+void setup() {
+  pinMode(LED, OUTPUT);
+  pinMode(BUTTON, INPUT_PULLUP);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  int val = digitalRead(BUTTON);
+  Serial.println(val);
+  if(val == 0){
+    digitalWrite(LED, HIGH);
+  } else if(val == 1){
+    digitalWrite(LED, LOW);
+  }
+  delay(100)
+}
